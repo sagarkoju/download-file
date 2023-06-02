@@ -27,11 +27,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
       home: HomeScreen(
-        title: 'Flutter Demo Home Page',
+        title: 'Flutter Download Files',
         platform: Theme.of(context).platform,
       ),
     );

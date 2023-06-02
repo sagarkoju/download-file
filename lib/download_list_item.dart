@@ -2,7 +2,7 @@ import 'package:download/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 
-class DownloadListItem extends StatelessWidget {
+class DownloadListItem extends StatefulWidget {
   const DownloadListItem({
     super.key,
     this.data,
@@ -16,10 +16,15 @@ class DownloadListItem extends StatelessWidget {
   final Function(TaskInfo)? onActionTap;
   final Function(TaskInfo)? onCancel;
 
+  @override
+  State<DownloadListItem> createState() => _DownloadListItemState();
+}
+
+class _DownloadListItemState extends State<DownloadListItem> {
   Widget? _buildTrailing(TaskInfo task) {
     if (task.status == DownloadTaskStatus.undefined) {
       return IconButton(
-        onPressed: () => onActionTap?.call(task),
+        onPressed: () => widget.onActionTap?.call(task),
         constraints: const BoxConstraints(minHeight: 32, minWidth: 32),
         icon: const Icon(Icons.file_download),
         tooltip: 'Start',
@@ -29,7 +34,7 @@ class DownloadListItem extends StatelessWidget {
         children: [
           Text('${task.progress}%'),
           IconButton(
-            onPressed: () => onActionTap?.call(task),
+            onPressed: () => widget.onActionTap?.call(task),
             constraints: const BoxConstraints(minHeight: 32, minWidth: 32),
             icon: const Icon(Icons.pause, color: Colors.yellow),
             tooltip: 'Pause',
@@ -41,14 +46,14 @@ class DownloadListItem extends StatelessWidget {
         children: [
           Text('${task.progress}%'),
           IconButton(
-            onPressed: () => onActionTap?.call(task),
+            onPressed: () => widget.onActionTap?.call(task),
             constraints: const BoxConstraints(minHeight: 32, minWidth: 32),
             icon: const Icon(Icons.play_arrow, color: Colors.green),
             tooltip: 'Resume',
           ),
-          if (onCancel != null)
+          if (widget.onCancel != null)
             IconButton(
-              onPressed: () => onCancel?.call(task),
+              onPressed: () => widget.onCancel?.call(task),
               constraints: const BoxConstraints(minHeight: 32, minWidth: 32),
               icon: const Icon(Icons.cancel, color: Colors.red),
               tooltip: 'Cancel',
@@ -56,13 +61,17 @@ class DownloadListItem extends StatelessWidget {
         ],
       );
     } else if (task.status == DownloadTaskStatus.complete) {
+      if (task.progress == 100) {
+        _openDownloadedFile(task);
+      }
+
       return Row(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           const Text('Ready', style: TextStyle(color: Colors.green)),
           IconButton(
-            onPressed: () => onActionTap?.call(task),
+            onPressed: () => widget.onActionTap?.call(task),
             constraints: const BoxConstraints(minHeight: 32, minWidth: 32),
             icon: const Icon(Icons.delete),
             tooltip: 'Delete',
@@ -75,9 +84,9 @@ class DownloadListItem extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           const Text('Canceled', style: TextStyle(color: Colors.red)),
-          if (onActionTap != null)
+          if (widget.onActionTap != null)
             IconButton(
-              onPressed: () => onActionTap?.call(task),
+              onPressed: () => widget.onActionTap?.call(task),
               constraints: const BoxConstraints(minHeight: 32, minWidth: 32),
               icon: const Icon(Icons.cancel),
               tooltip: 'Cancel',
@@ -91,7 +100,7 @@ class DownloadListItem extends StatelessWidget {
         children: [
           const Text('Failed', style: TextStyle(color: Colors.red)),
           IconButton(
-            onPressed: () => onActionTap?.call(task),
+            onPressed: () => widget.onActionTap?.call(task),
             constraints: const BoxConstraints(minHeight: 32, minWidth: 32),
             icon: const Icon(Icons.refresh, color: Colors.green),
             tooltip: 'Refresh',
@@ -105,12 +114,21 @@ class DownloadListItem extends StatelessWidget {
     }
   }
 
+  Future<bool> _openDownloadedFile(TaskInfo? task) async {
+    final taskId = task?.taskId;
+    if (taskId == null) {
+      return false;
+    }
+
+    return FlutterDownloader.open(taskId: taskId);
+  }
+
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: data!.task!.status == DownloadTaskStatus.complete
+      onTap: widget.data!.task!.status == DownloadTaskStatus.complete
           ? () {
-              onTap!(data!.task);
+              widget.onTap!(widget.data!.task);
             }
           : null,
       child: Container(
@@ -125,7 +143,7 @@ class DownloadListItem extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        data!.name!,
+                        widget.data!.name!,
                         maxLines: 1,
                         softWrap: true,
                         overflow: TextOverflow.ellipsis,
@@ -133,21 +151,21 @@ class DownloadListItem extends StatelessWidget {
                     ),
                     Padding(
                       padding: const EdgeInsets.only(left: 8),
-                      child: _buildTrailing(data!.task!),
+                      child: _buildTrailing(widget.data!.task!),
                     ),
                   ],
                 ),
               ),
-              if (data!.task!.status == DownloadTaskStatus.running ||
-                  data!.task!.status == DownloadTaskStatus.paused)
+              if (widget.data!.task!.status == DownloadTaskStatus.running ||
+                  widget.data!.task!.status == DownloadTaskStatus.paused)
                 Positioned(
                   left: 0,
                   right: 0,
                   bottom: 0,
                   child: LinearProgressIndicator(
-                    value: data!.task!.progress! / 100,
+                    value: widget.data!.task!.progress! / 100,
                   ),
-                )
+                ),
             ],
           ),
         ),

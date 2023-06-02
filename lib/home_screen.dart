@@ -1,3 +1,5 @@
+// ignore_for_file: unrelated_type_equality_checks
+
 import 'dart:io';
 import 'dart:isolate';
 import 'dart:ui';
@@ -152,8 +154,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   _pauseDownload(task);
                 } else if (task.status == DownloadTaskStatus.paused) {
                   _resumeDownload(task);
-                } else if (task.status == DownloadTaskStatus.complete ||
-                    task.status == DownloadTaskStatus.canceled) {
+                } else if (task.status == DownloadTaskStatus.complete) {
                   _delete(task);
                 } else if (task.status == DownloadTaskStatus.failed) {
                   _retryDownload(task);
